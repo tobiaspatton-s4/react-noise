@@ -3,30 +3,49 @@ import rd3 from 'rd3';
 
 export class NoisePlot extends Component {
     render() {
+        const noiseGenerator = this.props.noiseGenerator;
+
+        if (noiseGenerator === null || !noiseGenerator.hasDataPoints) {
+            return null;
+        }
+
         var LineChart = rd3.LineChart
-        var lineData = [
-            {
-                name: 'series1',
-                values: [{ x: 0, y: 20 }, { x: 1, y: 30 }, { x: 2, y: 10 }, { x: 3, y: 5 }, { x: 4, y: 8 }, { x: 5, y: 15 }, { x: 6, y: 10 }],
-                strokeWidth: 3,
-                strokeDashArray: "5,5",
-            },
-            {
-                name: 'series2',
-                values: [{ x: 0, y: 8 }, { x: 1, y: 5 }, { x: 2, y: 20 }, { x: 3, y: 12 }, { x: 4, y: 4 }, { x: 5, y: 6 }, { x: 6, y: 2 }]
-            },
-            {
-                name: 'series3',
-                values: [{ x: 0, y: 0 }, { x: 1, y: 5 }, { x: 2, y: 8 }, { x: 3, y: 2 }, { x: 4, y: 6 }, { x: 5, y: 4 }, { x: 6, y: 2 }]
-            }
-        ];
+        const range = Array(noiseGenerator.range).fill();
+        var lineData = [];
+
+        for (var l = 0; l < this.props.numberOfLevels; l++) {
+            var series = {
+                name: 'L' + (l + 1),
+                values: range.map((d, i) => {
+                    return { 
+                        x: i, 
+                        y: noiseGenerator.valueAt(i, noiseGenerator.cosineInterpolate, l) 
+                    };
+                }),
+                strokeWidth: 1
+            };
+            lineData.push(series);
+        }
+
+        var combined = {
+            name: "All",
+            values: range.map((d, i) => {
+                return {x: i, y: lineData.reduce((a, v) => {
+                    return a + v.values[i].y;
+                }, 0)}
+            }),
+            strokeWidth: 2
+        };
+
+        lineData.unshift(combined);
 
         return (
             <LineChart
                 legend={true}
                 data={lineData}
-                width='100%'
-                height={400}
+                width="100%"
+                height={600}
+                circleRadius={0}
                 viewBoxObject={{
                     x: 0,
                     y: 0,
@@ -34,9 +53,7 @@ export class NoisePlot extends Component {
                     height: 400
                 }}
                 title="Line Chart"
-                yAxisLabel="Altitude"
-                xAxisLabel="Elapsed Time (sec)"
-                domain={{ x: [, 6], y: [-10,] }}
+                domain={{ x: [0, noiseGenerator.range - 1], y: [-1.1, 1.1] }}
                 gridHorizontal={true}
                 />
         );

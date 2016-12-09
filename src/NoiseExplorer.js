@@ -1,37 +1,38 @@
 import React, { Component } from  'react';
 import { NoiseConfiguration } from './NoiseConfiguration.js';
-import { NoiseDataDisplay } from './NoiseDataDisplay.js';
 import { NoisePlot } from './NoisePlot.js';
 
 export class NoiseExplorer extends Component {
     constructor(props) {
         super(props);
-        this.updateNumberOfPoints = this.updateNumberOfPoints.bind(this);
+        this.updateConfiguration = this.updateConfiguration.bind(this);
 
-        const noiseGenerator = this.props.noiseGenerator; 
+        const noiseGenerator = this.props.noiseGenerator;
         this.state = {
-            numberOfPoints: noiseGenerator.numberOfDataPoints
+            numberOfPoints: noiseGenerator.numberOfDataPoints,
+            numberOfLevels: 4
         };
     }
 
-    updateNumberOfPoints(number) {
-         this.setState({numberOfPoints: number});
-         const noiseGenerator = this.props.noiseGenerator;
-         noiseGenerator.numberOfDataPoints = number;
-         noiseGenerator.regenerateDataPoints();
+    updateConfiguration(layers, levels) {
+        this.setState({ numberOfLevels: levels })
+        const noiseGenerator = this.props.noiseGenerator;
+        noiseGenerator.numberOfDataPoints = layers;
+        noiseGenerator.regenerateDataPoints();
     }
 
     render() {
         const noiseGenerator = this.props.noiseGenerator;
-        const dataPoints = noiseGenerator.dataPoints;
         const numberOfPoints = noiseGenerator.numberOfDataPoints;
+        const numberOfLevels = this.state.numberOfLevels;
         return (
-        <div>
-            <p className="strong">Noise Explorer</p>
-            <NoiseConfiguration numberOfPoints={numberOfPoints}
-                                updateNumberOfPoints={this.updateNumberOfPoints}/>
-            <NoiseDataDisplay dataPoints={dataPoints}/>
-            <NoisePlot/>
-        </div>);
+            <div>
+                <p className="strong">Noise Explorer</p>
+                <NoiseConfiguration numberOfPoints={numberOfPoints}
+                                    numberOfLevels={numberOfLevels}
+                                    updateConfiguration={this.updateConfiguration}/>
+                <NoisePlot noiseGenerator={noiseGenerator}
+                           numberOfLevels={numberOfLevels}/>
+            </div>);
     }
 }
